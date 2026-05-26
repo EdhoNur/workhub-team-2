@@ -11,9 +11,7 @@ import (
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
-		authHeader :=
-			c.GetHeader("Authorization")
+		authHeader := c.GetHeader("Authorization")
 
 		if authHeader == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{
@@ -24,23 +22,11 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		tokenString :=
-			strings.TrimPrefix(
-				authHeader,
-				"Bearer ",
-			)
-
-		token, err := jwt.Parse(
-			tokenString,
-			func(token *jwt.Token) (
-				interface{},
-				error,
-			) {
-				return []byte(
-					os.Getenv("JWT_SECRET"),
-				), nil
-			},
-		)
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		keyFunc := func(token *jwt.Token) (interface{}, error) {
+			return []byte(os.Getenv("JWT_SECRET")), nil
+		}
+		token, err := jwt.Parse(tokenString, keyFunc)
 
 		if err != nil || !token.Valid {
 			c.JSON(http.StatusUnauthorized, gin.H{
@@ -51,18 +37,9 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		claims :=
-			token.Claims.(jwt.MapClaims)
-
-		c.Set(
-			"user_id",
-			uint(claims["user_id"].(float64)),
-		)
-
-		c.Set(
-			"role",
-			claims["role"].(string),
-		)
+		claims := token.Claims.(jwt.MapClaims)
+		c.Set("user_id", uint(claims["user_id"].(float64)))
+		c.Set("role", claims["role"].(string))
 
 		c.Next()
 	}
