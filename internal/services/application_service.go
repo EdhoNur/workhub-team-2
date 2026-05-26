@@ -2,17 +2,20 @@ package services
 
 import (
 	"errors"
+	"log"
 	"time"
 	"workhub/internal/dto"
 	"workhub/internal/models"
 	"workhub/internal/repositories"
+	"workhub/internal/repositories/interfaces"
 	"workhub/internal/utils"
 )
 
 type ApplicationService struct {
-	applicationRepo *repositories.ApplicationRepository
-	jobRepo         *repositories.JobRepository
-	companyRepo     *repositories.CompanyRepository
+	applicationRepo interfaces.ApplicationRepository
+	jobRepo         interfaces.JobRepository
+	companyRepo     interfaces.CompanyRepository
+	userRepo        interfaces.UserRepository
 }
 
 func NewApplicationService() *ApplicationService {
@@ -20,6 +23,7 @@ func NewApplicationService() *ApplicationService {
 		applicationRepo: repositories.NewApplicationRepository(),
 		jobRepo:         repositories.NewJobRepository(),
 		companyRepo:     repositories.NewCompanyRepository(),
+		userRepo:        repositories.NewUserRepository(),
 	}
 }
 
@@ -90,17 +94,18 @@ func (s *ApplicationService) UpdateApplicationStatus(id uint, userID uint, req d
 
 	// Send email if accepted
 	if req.Status == "accepted" {
-		userRepo := repositories.NewUserRepository()
-
-		user, err := userRepo.FindByID(application.JobseekerID)
+		user, err := s.userRepo.FindByID(application.JobseekerID)
 		if err != nil {
 			return err
 		}
 
+		subject := "Job Application Accepted"
 		content := "<h1>Congratulations!</h1><p>Your application has been accepted.</p>"
-		if err := utils.SendEmail(user.Email, user.Name, "Job Application Accepted", content); err != nil {
-			return err
-		}
+		go func(email string, name string) {
+			if err := utils.SendEmail(email, name, subject, content); err != nil {
+				log.Printf("failed to send email to %s: %v", email, err)
+			}
+		}(user.Email, user.Name)
 	}
 	return nil
 }

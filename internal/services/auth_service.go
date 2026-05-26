@@ -5,11 +5,12 @@ import (
 	"workhub/internal/dto"
 	"workhub/internal/models"
 	"workhub/internal/repositories"
+	"workhub/internal/repositories/interfaces"
 	"workhub/internal/utils"
 )
 
 type AuthService struct {
-	userRepo *repositories.UserRepository
+	userRepo interfaces.UserRepository
 }
 
 func NewAuthService() *AuthService {

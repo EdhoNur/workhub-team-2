@@ -5,10 +5,11 @@ import (
 	"workhub/internal/dto"
 	"workhub/internal/models"
 	"workhub/internal/repositories"
+	"workhub/internal/repositories/interfaces"
 )
 
 type CompanyService struct {
-	companyRepo *repositories.CompanyRepository
+	companyRepo interfaces.CompanyRepository
 }
 
 func NewCompanyService() *CompanyService {

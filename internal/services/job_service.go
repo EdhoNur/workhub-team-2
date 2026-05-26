@@ -5,11 +5,12 @@ import (
 	"workhub/internal/dto"
 	"workhub/internal/models"
 	"workhub/internal/repositories"
+	"workhub/internal/repositories/interfaces"
 )
 
 type JobService struct {
-	jobRepo     *repositories.JobRepository
-	companyRepo *repositories.CompanyRepository
+	jobRepo     interfaces.JobRepository
+	companyRepo interfaces.CompanyRepository
 }
 
 func NewJobService() *JobService {
